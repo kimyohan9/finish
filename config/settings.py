@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
-AUTH_USER_MODEL = "user.User"
+AUTH_USER_MODEL = "users.User"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,19 +28,22 @@ SECRET_KEY = "django-insecure-x0g7c$n$l+5#!pcp_6bl@$8lvqznwp!r31oq(yf8q8f!r!8d6p
 DEBUG = True
 
 ALLOWED_HOSTS = []
+LOGOUT_REDIRECT_URL = "/"
 
 
 # Application definition
 
 INSTALLED_APPS = [
     "users",
+    "rest_framework",
+    "rest_framework.authtoken",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
+       
 ]
 
 MIDDLEWARE = [
