@@ -1,0 +1,42 @@
+<!-- <!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 작성</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        form { display: flex; flex-direction: column; gap: 10px; }
+        input, textarea { width: 100%; padding: 10px; }
+        button { padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>게시글 작성</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">작성하기</button>
+    </form>
+    <p><a href="{% url 'post_list' %}">목록으로 돌아가기</a></p>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 작성</title>
+</head>
+<body>
+    <h2>게시글 작성</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">작성 완료</button>
+    </form>
+    <!-- 홈으로 가기 버튼 추가 -->
+    <a href="{% url 'post_list' %}">홈으로 가기</a>
+</body>
+</html>
