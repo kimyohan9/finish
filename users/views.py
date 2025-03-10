@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from .serializers import UserRegisterSerializer
 
+
 @api_view(['POST'])
 def register_api(request):
     serializer = UserRegisterSerializer(data=request.data)
