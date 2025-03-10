@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
-AUTH_USER_MODEL = "users.User"
+# AUTH_USER_MODEL = "users.User"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,18 +32,25 @@ LOGOUT_REDIRECT_URL = "/"
 
 
 # Application definition
-
+AUTH_USER_MODEL = 'users.CustomUser'
 INSTALLED_APPS = [
-    "users",
-    "rest_framework",
-    "rest_framework.authtoken",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-       
+    "rest_framework",
+    "rest_framework.authtoken",
+
+    # "allauth",
+    # "allauth.account",
+    # "allauth.socialaccount",
+    # "allauth.socialaccount.providers.kakao", 
+
+    "users",
+    "chatbot",
+    "post",       
 ]
 
 MIDDLEWARE = [
@@ -54,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -61,7 +69,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -86,6 +94,16 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# SOCIALACCOUNT_PROVIDERS = {
+#     "kakao": {
+#         "APP": {
+#             "client_id": "a6971a25bb35dc1113d81b5713a3ccc7",  # ✅ 여기에 카카오 REST API 키 입력
+#             "secret": "",  # 카카오는 secret key가 필요 없음
+#             "key": "",
+#         }
+#     }
+# }
 
 
 # Password validation
@@ -128,3 +146,16 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# AUTHENTICATION_BACKENDS = [
+#     "django.contrib.auth.backends.ModelBackend",
+#     "allauth.account.auth_backends.AuthenticationBackend",
+# ]
+
+# SITE_ID = 1  # Django 사이트 ID
+# LOGIN_REDIRECT_URL = "/"  # 로그인 후 이동할 페이지
+
+# ACCOUNT_LOGOUT_REDIRECT_URL = "/"  # 로그아웃 후 이동할 페이지
+# ACCOUNT_EMAIL_VERIFICATION = "none"  # 이메일 인증 비활성화
+# SOCIALACCOUNT_QUERY_EMAIL = True
+# SOCIALACCOUNT_AUTO_SIGNUP = True
