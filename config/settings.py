@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-x0g7c$n$l+5#!pcp_6bl@$8lvqznwp!r31oq(yf8q8f!r!8d6p
 DEBUG = True
 
 ALLOWED_HOSTS = []
-LOGOUT_REDIRECT_URL = "/"
+# LOGOUT_REDIRECT_URL = "/"
 
 
 # Application definition
@@ -40,13 +40,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     "rest_framework",
     "rest_framework.authtoken",
 
-    # "allauth",
-    # "allauth.account",
-    # "allauth.socialaccount",
-    # "allauth.socialaccount.providers.kakao", 
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.kakao", #카카오톡
 
     "users",
     "chatbot",
@@ -61,7 +62,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    # "allauth.account.middleware.AccountMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -95,15 +96,15 @@ DATABASES = {
     }
 }
 
-# SOCIALACCOUNT_PROVIDERS = {
-#     "kakao": {
-#         "APP": {
-#             "client_id": "a6971a25bb35dc1113d81b5713a3ccc7",  # ✅ 여기에 카카오 REST API 키 입력
-#             "secret": "",  # 카카오는 secret key가 필요 없음
-#             "key": "",
-#         }
-#     }
-# }
+SOCIALACCOUNT_PROVIDERS = {
+    "kakao": {
+        "APP": {
+            "client_id": "a6971a25bb35dc1113d81b5713a3ccc7",  # ✅ 여기에 카카오 REST API 키 입력
+            "secret": "VFzF6RIRwUK4JZKV7QM8n4PT9qAbE4KE",  # 카카오는 secret key가 필요 없음
+            "key": "",
+        }
+    }
+}
 
 
 # Password validation
@@ -147,15 +148,16 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# AUTHENTICATION_BACKENDS = [
-#     "django.contrib.auth.backends.ModelBackend",
-#     "allauth.account.auth_backends.AuthenticationBackend",
-# ]
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+] #카카오톡
 
-# SITE_ID = 1  # Django 사이트 ID
-# LOGIN_REDIRECT_URL = "/"  # 로그인 후 이동할 페이지
+SITE_ID = 1  # Django 사이트 ID
+# LOGIN_REDIRECT_URL = "users"  # 로그인 후 이동할 페이지
 
-# ACCOUNT_LOGOUT_REDIRECT_URL = "/"  # 로그아웃 후 이동할 페이지
-# ACCOUNT_EMAIL_VERIFICATION = "none"  # 이메일 인증 비활성화
-# SOCIALACCOUNT_QUERY_EMAIL = True
-# SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+# ACCOUNT_LOGOUT_REDIRECT_URL = "users"  # 로그아웃 후 이동할 페이지
+ACCOUNT_EMAIL_VERIFICATION = "none"  # 이메일 인증 비활성화
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_AUTO_SIGNUP = True

@@ -1,3 +1,4 @@
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -20,7 +21,9 @@
         <input type="password" name="password" placeholder="비밀번호" required>
         <button type="submit">로그인</button>
     </form>
-    
+    <button type="button" onclick="location.href = '{% provider_login_url 'kakao' %}'"><img class = "kakao" src="https://k.kakaocdn.net/14/dn/btroDszwNrM/I6efHub1SN5KCJqLm1Ovx1/o.jpg" alt="" ></button>
     
 </body>
 </html>
+
+
