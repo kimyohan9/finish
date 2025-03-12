@@ -51,7 +51,8 @@ INSTALLED_APPS = [
 
     "users",
     "chatbot",
-    "post",       
+    "post",    
+    "crawled_data", 
 ]
 
 MIDDLEWARE = [
