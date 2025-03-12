@@ -1,0 +1,93 @@
+<!-- post_detail.html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ post.title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        .post { margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .comment { margin-top: 15px; padding: 10px; border-top: 1px solid #eee; }
+        .comment-form { margin-top: 20px; }
+        input, textarea { width: 100%; padding: 10px; margin-top: 5px; }
+        button { padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="post">
+        <h2>{{ post.title }}</h2>
+        <p>{{ post.content }}</p>
+        <small>작성일: {{ post.created_at }}</small>
+    </div>
+
+    <div class="comments">
+        <h3>댓글 목록</h3>
+        {% for comment in comments %}
+            <div class="comment">
+                <p>{{ comment.content }}</p>
+                <small>작성자: {{ comment.author.username }} | 작성일: {{ comment.created_at }}</small>
+            </div>
+        {% empty %}
+            <p>댓글이 없습니다.</p>
+        {% endfor %}
+    </div>
+
+    {% if user.is_staff %}
+    <div class="comment-form">
+        <h3>댓글 작성</h3>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">댓글 작성</button>
+        </form>
+    </div>
+    {% else %}
+        <p><em>댓글은 관리자만 작성 가능합니다.</em></p>
+    {% endif %}
+
+    <p><a href="{% url 'post_list' %}">목록으로 돌아가기</a></p>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ post.title }}</title>
+</head>
+<body>
+    <h2>{{ post.title }}</h2>
+    <p><strong>작성자:</strong> {{ post.author.username }}</p>
+    <p>{{ post.content }}</p>
+    <hr>
+    <!-- 게시글 삭제 버튼 -->
+    {% if user == post.author or user.is_staff %}
+        <form action="{% url 'post_delete' post.id %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?');">게시글 삭제</button>
+        </form>
+    {% endif %}
+    <!-- 홈으로 가기 버튼 -->
+    <a href="{% url 'post_list' %}">홈으로 가기</a>
+    <hr>
+    <h3>댓글</h3>
+    {% for comment in comments %}
+        <p><strong>{{ comment.author.username }}</strong>: {{ comment.content }}</p>
+    {% empty %}
+        <p>아직 댓글이 없습니다.</p>
+    {% endfor %}
+    <hr>
+    {% if user.is_staff %}
+        <h3>댓글 작성</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">댓글 작성</button>
+        </form>
+    {% else %}
+        <p><strong>※ 관리자만 댓글을 작성할 수 있습니다.</strong></p>
+    {% endif %}
+</body>
+</html>

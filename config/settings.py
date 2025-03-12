@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
-AUTH_USER_MODEL = "user.User"
+# AUTH_USER_MODEL = "users.User"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,19 +28,30 @@ SECRET_KEY = "django-insecure-x0g7c$n$l+5#!pcp_6bl@$8lvqznwp!r31oq(yf8q8f!r!8d6p
 DEBUG = True
 
 ALLOWED_HOSTS = []
+# LOGOUT_REDIRECT_URL = "/"
 
 
 # Application definition
-
+AUTH_USER_MODEL = 'users.CustomUser'
 INSTALLED_APPS = [
-    "users",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
+    "django.contrib.sites",
+    "rest_framework",
+    "rest_framework.authtoken",
+
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.kakao", #카카오톡
+
+    "users",
+    "chatbot",
+    "post",       
 ]
 
 MIDDLEWARE = [
@@ -51,6 +62,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -58,7 +70,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -81,6 +93,16 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
+
+SOCIALACCOUNT_PROVIDERS = {
+    "kakao": {
+        "APP": {
+            "client_id": "a6971a25bb35dc1113d81b5713a3ccc7",  # ✅ 여기에 카카오 REST API 키 입력
+            "secret": "VFzF6RIRwUK4JZKV7QM8n4PT9qAbE4KE",  # 카카오는 secret key가 필요 없음
+            "key": "",
+        }
     }
 }
 
@@ -125,3 +147,17 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+] #카카오톡
+
+SITE_ID = 1  # Django 사이트 ID
+# LOGIN_REDIRECT_URL = "users"  # 로그인 후 이동할 페이지
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
+# ACCOUNT_LOGOUT_REDIRECT_URL = "users"  # 로그아웃 후 이동할 페이지
+ACCOUNT_EMAIL_VERIFICATION = "none"  # 이메일 인증 비활성화
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
