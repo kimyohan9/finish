@@ -1,13 +1,35 @@
-from typing import Dict, Any
+import requests
+import json
 import xml.etree.ElementTree as ET
 import xmltodict
-import json
-import requests
+from typing import Dict, Any
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.output_parsers import JsonOutputParser
 
+#주소 입력을 통해 PNU코드 포함한 주소에 대한 상세 정보 획득용 함수
+def address_info(category:str,address:str): 
+    #category 값에 제한 지번 검색시 PARCEL, 도로명 주소 검색시 ROAD 입력. 이외 입력시 error 반환.  
+    if category not in {"ROAD", "PARCEL"}:
+        raise ValueError(f"Invalid category: {category}. Must be 'ROAD' or 'PARCEL'.")
+    
+    vw_key = "75A44873-E439-3BE4-B66B-030DEC46BD54"
+    vw_URL = "https://api.vworld.kr/req/search"
+    
+    params ={'request' : "search", 
+         'key' : vw_key,
+         'query' : address,
+         'type' : "address",
+         'category' : category }
+    response = requests.get(vw_URL, params=params)
+    
+    response_context = response.text #response를 JSON 데이터로 변환. str 형식
+    parsed_json = json.loads(response_context)  # 데이터를 dict 형식으로 파싱.   
+    result_data = parsed_json["response"]["result"]['items'][0]
+    return result_data #주소 정보 전체 호출
+
+# 토양 정보 조회용 함수.
 def soilexam(service_key, PNU_Code):
     url = 'http://apis.data.go.kr/1390802/SoilEnviron/SoilExam/getSoilExam' # 서비스 URL
     params ={'serviceKey' : service_key, 'PNU_Code' : PNU_Code } #api key와 조회할 토지 주소(법정코드 PNU code)
@@ -22,36 +44,6 @@ def soilexam(service_key, PNU_Code):
         return exam_data
     except KeyError: #조회 실패시 0 반환. 
         return 0
-
-
-def print_recommendations(data):
-    # 조회된 토양정보가 없는 경우. 
-    if data == 0:
-        fail_message = "조회된 토양정보가 없습니다."
-        return fail_message
-    
-    """추천 작물 목록을 출력하는 독립적인 함수"""
-    print("=" * 80)
-    print("📢 제공된 토양 정보를 기반으로 추천된 작물 목록입니다.")
-    print("=" * 80, "\n")
-
-    for idx, rec in enumerate(data["recommendations"], 1):
-        if rec['crop'] == "Nan": #작물 이름이 없는 경우. 해당 항목 건너뜀.  
-            continue 
-        print(f"🌱 추천 작물 {idx}: {rec['crop']}")
-        print("-" * 50)
-        print("✅ **적정 환경 조건**")
-        for key, value in rec["optimal_conditions"].items():
-            print(f"  🔹 {key}: {value}")
-        print("\n📝 **추천 이유**:")
-        print(f"  {rec['reason']}")
-        print("=" * 80, "\n")
-
-# 선택한 작물의 정보만 출력하는 함수. 
-def get_crop_info(recommendation, crop_name):
-    for rec in recommendation["recommendations"]:
-        if rec["crop"] == crop_name:
-            return rec
 
 class SoilExamRAG:
     def __init__(self, service_key: str, PNU_Code: str, prompt, persist_dir="my_vector_store"):
@@ -77,34 +69,60 @@ class SoilExamRAG:
 
     def retrieve_context(self, input_data: Dict[str, Any]) -> str:
         """입력 데이터를 기반으로 벡터스토어에서 유사 문서 검색"""
-        query = "\n".join([f"{key}: {value}" for key, value in input_data.items()]) # dict를 문자열(쿼리)로 변환하는 함수. 
+        query = "\n".join([f"{key}: {value}" for key, value in input_data.items()])
         docs = self.retriever.invoke(query)
         return "\n".join([doc.page_content for doc in docs])
 
     def get_recommendation(self) -> str:
         """토양 정보를 기반으로 가장 적합한 작물을 추천"""
-        input_data = self.fetch_soil_data() # 토양정보 획득. 
-        if input_data == 0: #획득한 토양 정보가 없는 경우 0을 반환
+        input_data = self.fetch_soil_data()    
+        if input_data == 0:
             print("조회된 토양 정보가 없습니다.")
             return 0
         
         context = self.retrieve_context(input_data)  # 유사 문서 검색
-        parser = JsonOutputParser() #출력을 Json 형태로 처리. 
+        parser = JsonOutputParser()
 
         # 체인 실행
         chain = self.prompt | self.model | parser
         response = chain.invoke({"input_data": input_data, "context": context})
-        return response  
+        data = response["recommendations"] # dict를 요소로 갖는 list로 변환. 
+        return data
     
-# 입력값 지정. 서비스 키 + PNU code
-service_key="q+kAKJCJgJXlNlBFxk5LHCmDivqtHEVdmd3vh4cftkCafbEmv4agKxoZemYjbqE9Gxjy0lRCVmbcG3ZtR4K2Tw=="
-PNU_Code ='5115034022100750001' # 추후 api 연결하여 자동으로 받아오는 구조로 변경. 
+#필요한 경우 원하는 작물 하나의 추천만 호출. 
+def get_crop_info(recommendation, crop_name):
+    for rec in recommendation:
+        if rec["crop"] == crop_name:
+            data = [rec]
+            return data
+
+# 추천 내용 프린트 하기. 
+def print_recommendations(data):
+    if data == 0:
+        print("조회된 토양정보가 없습니다.")
+        return 0
+    """추천 작물 목록을 출력하는 독립적인 함수"""
+    print("=" * 80)
+    print("📢 제공된 토양 정보를 기반으로 추천된 작물 목록입니다.")
+    print("=" * 80, "\n")
+
+    for idx, rec in enumerate(data, 1):
+        if rec['crop'] == "Nan":
+            break
+        print(f"🌱 추천 작물 {idx}: {rec['crop']}")
+        print("-" * 50)
+        print("✅ **적정 환경 조건**")
+        for key, value in rec["optimal_conditions"].items():
+            print(f"  🔹 {key}: {value}")
+        print("\n📝 **추천 이유**:")
+        print(f"  {rec['reason']}")
+        print("=" * 80, "\n")
 
 # 프롬프트. 토양정보 받아서 rag 사용하여 적정 환경에 포함되는 작물 추천. 
 prompt = PromptTemplate(
     template="""
     아래의 토양 환경 정보를 기반으로 사용자 입력과 비교하여 적합한 작물을 3종류 JSON 형식으로 추천해 주세요.
-    JSON에 입력할 값이 없는 경우 Nan을 입력해 주세요. 단. crop 에는 Nan을 입력하면 안됩니다.
+    JSON에 입력할 값이 없는 경우 null을 입력해 주세요. 단. crop 에는 반드시 작물 이름이 입력되야 합니다. 
     추천이유에는 부정적인 말을 사용하지 말고, 추천한 작물이 사용자 입력의 토양정보에 적합한 이유를 설명하세요. 
 
     🌱 **사용자 입력 (토양 정보)**:
@@ -138,7 +156,20 @@ prompt = PromptTemplate(
     input_variables=["input_data", "context"]
 )
 
+# 입력값 지정. 서비스 키 + PNU code
+#토지 조회 api용 service key
+service_key="q+kAKJCJgJXlNlBFxk5LHCmDivqtHEVdmd3vh4cftkCafbEmv4agKxoZemYjbqE9Gxjy0lRCVmbcG3ZtR4K2Tw=="
+# PNU code + 주소 관련 상세 정보 획득. 
+add_info = address_info("PARCEL",'전라남도 해남군 산이면 덕송리 751')
+PNU_Code = add_info["id"]
 
+# 추천 시스템 동작. 
 rag_system = SoilExamRAG(service_key=service_key, PNU_Code=PNU_Code, prompt = prompt)
 recommendation = rag_system.get_recommendation()
+# 추천 내역 출력. 
+print_recommendations(recommendation)
 
+#단일 작물에 대한 추천 출력
+# crop_name = "박하"
+# data= get_crop_info(recommendation, crop_name)
+# print_recommendations(recommendation)
