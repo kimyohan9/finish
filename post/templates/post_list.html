@@ -1,0 +1,51 @@
+<!-- <!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 목록</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+        .post { padding: 10px; border-bottom: 1px solid #ddd; }
+        .post a { text-decoration: none; font-size: 18px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>게시글 목록</h1>
+    <a href="{% url 'post_create' %}">새 게시글 작성</a>
+    <hr>
+
+    {% for post in posts %}
+        <div class="post">
+            <a href="{% url 'post_detail' post.id %}">{{ post.title }}</a>
+            <p>{{ post.content|truncatechars:100 }}</p>
+            <small>작성일: {{ post.created_at }}</small>
+        </div>
+    {% empty %}
+        <p>게시글이 없습니다.</p>
+    {% endfor %}
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 목록</title>
+</head>
+<body>
+    <h2>게시글 목록</h2>
+    <a href="{% url 'post_create' %}">게시글 작성</a>
+    <ul>
+        {% for post in posts %}
+            <li>
+                <a href="{% url 'post_detail' post.id %}">{{ post.title }}</a>
+                (작성자: {{ post.author.username }})
+            </li>
+        {% empty %}
+            <p>게시글이 없습니다.</p>
+        {% endfor %}
+    </ul>
+</body>
+</html>
