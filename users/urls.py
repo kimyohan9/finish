@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import logout_api, register_api
+from .views import logout_api, register_api, UserUpdateAPIView, UserDeleteAPIView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.views import LogoutView
 from .views import register_api,login_api,kakao_login
@@ -10,5 +10,6 @@ urlpatterns = [
     path("login/", login_api, name="login_api"),
     path("logout/", logout_api, name="logout_api"),
     path("api/kakao/login/", kakao_login, name="kakao_login"),
-    
+    path('update/', UserUpdateAPIView.as_view(), name='user_update'),
+    path('delete/', UserDeleteAPIView.as_view(), name='user_delete'),
 ]

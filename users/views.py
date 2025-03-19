@@ -4,12 +4,14 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, renderer_classes
-from .serializers import UserRegisterSerializer
+from .serializers import UserRegisterSerializer, UserSerializer
 from django.shortcuts import render
 from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from django.contrib.auth import get_user_model
 import requests
-
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from django.views.decorators.csrf import csrf_exempt #일시적 로그인 오류해결 배포시 같이 삭제하기
 
 KAKAO_CLIENT_ID = "a6971a25bb35dc1113d81b5713a3ccc7"  # ✅ 여기에 본인의 카카오 REST API 키 입력
 KAKAO_REDIRECT_URI = "http://127.0.0.1:8000/accounts/kakao/login/callback/"  # ✅ 카카오 로그인 리디렉트 URL
@@ -129,6 +131,7 @@ def register_api(request):
         return Response({"message": "회원가입 성공!", "user_id": user.id}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@csrf_exempt # 포스트맨 테스트 csrf 토큰에러 일시 제거 베포시 삭제
 @api_view(['POST'])
 def login_api(request):
     
@@ -149,3 +152,28 @@ def logout_api(request):
     Token.objects.filter(user=user).delete()
     logout(request)
     return Response({"message": "로그아웃 성공!"}, status=status.HTTP_200_OK)
+
+
+
+
+# 회원 정보 수정 (이름, 이메일 등)
+class UserUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        serializer = UserSerializer(user, data=request.data, partial=True)  # 부분 업데이트 가능
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# 회원 탈퇴 (DB 기록은 유지, 비활성화)
+class UserDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.is_active = False  # 계정을 비활성화 (DB 기록 유지)
+        user.save()
+        return Response({"message": "회원 탈퇴가 완료되었습니다."}, status=status.HTTP_200_OK)
