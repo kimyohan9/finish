@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 
 class CustomUser(AbstractUser):
     pass
@@ -8,3 +9,13 @@ class CustomUser(AbstractUser):
 
     # def __str__(self):
     #     return self.username
+    
+class Profile(models.Model):
+    # User 모델을 settings.AUTH_USER_MODEL로 변경
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')  # User와 1:1 관계
+    bio = models.TextField(blank=True, null=True)  # 사용자의 소개글
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)  # 프로필 사진
+    location = models.CharField(max_length=100, blank=True, null=True)  # 위치
+
+    def __str__(self):
+        return f'Profile of {self.user.username}'

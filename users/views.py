@@ -8,6 +8,8 @@ from .serializers import UserRegisterSerializer
 from django.shortcuts import render
 from rest_framework.renderers import TemplateHTMLRenderer, JSONRenderer
 from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 import requests
 
 
@@ -149,3 +151,31 @@ def logout_api(request):
     Token.objects.filter(user=user).delete()
     logout(request)
     return Response({"message": "로그아웃 성공!"}, status=status.HTTP_200_OK)
+
+class ProfileView(APIView):
+    """
+    사용자의 프로필 페이지를 조회하는 API 뷰
+    """
+    def get(self, request):
+        profile = request.user.profile  # 현재 로그인한 사용자의 프로필
+        serializer = ProfileSerializer(profile)  # 프로필 직렬화
+        return Response(serializer.data)
+
+class EditProfileView(APIView):
+    """
+    사용자가 자신의 프로필을 수정하는 API 뷰
+    """
+    parser_classes = (MultiPartParser, FormParser)  # 파일 업로드 처리
+
+    def get(self, request):
+        profile = request.user.profile  # 현재 로그인한 사용자의 프로필
+        serializer = ProfileSerializer(profile)  # 프로필 직렬화
+        return Response(serializer.data)  # GET 요청 시 현재 프로필 데이터 반환
+
+    def post(self, request):
+        profile = request.user.profile  # 현재 로그인한 사용자의 프로필
+        serializer = ProfileSerializer(profile, data=request.data, partial=True)  # 수정된 데이터로 직렬화
+        if serializer.is_valid():
+            serializer.save()  # 유효한 데이터는 저장
+            return Response({'message': '프로필이 수정되었습니다!'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
