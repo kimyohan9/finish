@@ -58,10 +58,13 @@ class SoilExamRAG:
     """토양 정보 기반 추천 시스템"""
     
     def __init__(self, PNU_Code: str, persist_dir="my_vector_store"):
-        
+        load_dotenv()
+        open_api_key = os.getenv("opneai_API_KEY")
         self.PNU_Code = PNU_Code        
-        self.model = ChatOpenAI(model="gpt-4o-mini")
-        self.embeddings = OpenAIEmbeddings()
+        # self.model = ChatOpenAI(model="gpt-4o-mini")
+        # self.embeddings = OpenAIEmbeddings()
+        self.model = ChatOpenAI(model="gpt-4o-mini", api_key=open_api_key)
+        self.embeddings = OpenAIEmbeddings(api_key=open_api_key)
         self.vector_store = Chroma(persist_directory=persist_dir, embedding_function=self.embeddings)
         self.retriever = self.vector_store.as_retriever()
     
@@ -87,7 +90,7 @@ class SoilExamRAG:
         prompt = PromptTemplate(
                 template="""
                     아래의 토양 환경 정보를 기반으로 사용자 입력과 비교하여 적합한 작물을 3종류 JSON 형식으로 추천해 주세요.
-                    JSON에 입력할 값이 없는 경우 Null을 입력해 주세요. 단 crop 에는 반드시 작물 이름이 입력되야 합니다. 
+                    JSON에 입력할 값이 없는 경우 null을 입력해 주세요. 단 crop 에는 반드시 작물 이름이 입력되야 합니다. 
                     추천이유에는 부정적인 말을 사용하지 말고, 추천한 작물이 사용자 입력의 토양정보에 적합한 이유를 설명하세요. 
 
             🌱 **사용자 입력 (토양 정보)**:
