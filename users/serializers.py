@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'profile']  # 유저 모델에 포함될 필드
+        fields = ['id', 'username', 'email', 'password', 'profile']  # 유저 모델에 포함될 필드
 
     def update(self, instance, validated_data):
         # 유저 프로필 정보 업데이트
